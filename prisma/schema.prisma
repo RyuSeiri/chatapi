@@ -1,0 +1,57 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = []
+}
+
+enum ChatGPTState {
+  Running
+  Overload
+  Stopped
+  Error
+  Starting
+  Down
+}
+
+model ChatGPTAccount {
+  id               String       @id @default(cuid())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  email            String
+  password         String
+  isGoogleLogin    Boolean      @default(false)
+  isMicrosoftLogin Boolean      @default(false)
+  status           ChatGPTState @default(Down)
+
+  @@unique([email])
+  @@map("chatgpt_account")
+}
+
+model ChatGPTConversation {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  sessionId      String   @map("session_id")
+  tenantId       String   @map("tenant_id")
+  conversationId String   @map("conversation_id")
+  messageId      String   @map("message_id")
+  email          String
+
+  @@unique([conversationId])
+  @@unique([tenantId, sessionId])
+  @@map("chatgpt_conversation")
+}
+
+model ChatGPTMessageResult {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  conversationId String   @map("conversation_id")
+  messageId      String   @map("message_id")
+  message        String
+  response       String
+}
